@@ -1,0 +1,270 @@
+
+<template>
+    <div class="login-form">
+        <div class="iconbutton" @click="goToIndex($event)">
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+        <form @submit.prevent="login()">
+            <div class="text-center">
+                <h1>Login</h1>
+            </div>
+            
+            <div class="content">
+                <ul class="ul_form">
+                    <li>
+                        <div class="input-field">
+                            <input type="email" v-model="user.email" placeholder="Email" autocomplete="nope"
+                                @blur="validate()" :class="{ 'is-invalid': errors.email }">
+                            <div class="invalid-feedback" v-if="errors.password">
+                                {{ errors.email }}
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="input-field">
+                            <input type="password" v-model="user.password" placeholder="Password"
+                                autocomplete="new-password" @blur="validate()" :class="{ 'is-invalid': errors.password }">
+                            <div class="invalid-feedback" v-if="errors.password">
+                                {{ errors.password }}
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="action">
+                <button type="submit">Đăng nhập</button>
+                <button @click="goToRegister($event)">Đăng ký</button>
+            </div>
+        </form>
+        <!-- <div class="action">
+            <button @click="goToIndex($event)">Trang chủ</button>
+            <button @click="goToRegister($event)">Đăng ký</button>
+        </div> -->
+    </div>
+</template>
+  
+<script>
+import UserService from "../services/user.service";
+export default {
+    data() {
+        return {
+            errors: {
+                email: "",
+                password: "",
+            },
+            user: {
+                email: "",
+                password: "",
+            },
+        }
+    },
+    methods: {
+        validate() {
+            let isValid = true;
+
+            this.errors = {
+                email: "",
+                password: "",
+            };
+            if (!this.user.email) {
+                this.errors.email = "Email là bắt buộc";
+                isValid = false;
+            }
+            if (!this.user.password) {
+                this.errors.password = "Mật khẩu là bắt buộc";
+                isValid = false;
+            }
+            return isValid;
+        },
+        goToRegister(event) {
+            event.preventDefault();
+            this.$router.push('/register');
+        },
+        // goToLogin() {
+        //     this.$router.push('');
+        // }
+        goToIndex(event) {
+            event.preventDefault();
+            this.$router.push('/');
+        },
+        async login() {
+            if (this.validate()) {
+                const userLogin = await UserService.login(this.user);
+                if (userLogin.role === "user") {
+                    this.$store.commit('login');
+                    this.$store.commit('setRole', 'user');
+                    this.$store.commit('setName', userLogin.name);
+                    this.$store.commit('setID', userLogin.id);
+                    this.$router.push({ name: "index" });
+                } else if (userLogin.role === "admin") {
+                    this.$store.commit('login');
+                    this.$store.commit('setRole', 'admin');
+                    this.$store.commit('setName', 'admin');
+                    this.$store.commit('setID', userLogin.id);
+                    this.$router.push({ name: "admin-products" });
+                } else {
+                    alert("Xin lỗi! Bạn đã nhập sai email hoặc mật khẩu!");
+                }
+            }
+        }
+    }
+};
+</script>
+  
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    /* background: #e35869; */
+    font-family: 'Rubik', sans-serif;
+}
+
+.invalid-feedback {
+    text-align: left;
+    color: red;
+    margin-top: 5px;
+}
+
+.login-form {
+    position: relative;
+    background: #fff;
+    width: 500px;
+    margin: 65px auto;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    flex-direction: column;
+    border-radius: 25px;
+    box-shadow: 0 2px 25px rgba(0, 0, 0, 0.2);
+}
+.login-form .iconbutton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+
+.login-form h1 {
+    padding: 35px 35px 0 35px;
+    font-weight: 300;
+}
+
+.login-form .content {
+    padding: 35px;
+    text-align: center;
+}
+
+.login-form .input-field {
+    padding: 12px 5px;
+}
+
+.login-form .input-field input {
+    font-size: 16px;
+    display: block;
+    font-family: 'Rubik', sans-serif;
+    width: 420px;
+    padding: 10px 1px;
+    border: 0;
+    border-bottom: 1px solid #747474;
+    outline: none;
+    -webkit-transition: all .2s;
+    transition: all .2s;
+}
+
+.login-form .input-field input::-webkit-input-placeholder {
+    text-transform: uppercase;
+}
+
+.login-form .input-field input::-moz-placeholder {
+    text-transform: uppercase;
+}
+
+.login-form .input-field input:-ms-input-placeholder {
+    text-transform: uppercase;
+}
+
+.login-form .input-field input::-ms-input-placeholder {
+    text-transform: uppercase;
+}
+
+.login-form .input-field input::placeholder {
+    text-transform: uppercase;
+}
+
+.login-form .input-field input:focus {
+    border-color: #222;
+}
+
+.login-form a.link {
+    text-decoration: none;
+    color: #747474;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.login-form .action {
+    display: -webkit-box;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    flex-direction: column;
+}
+
+.login-form .action button {
+    border: none;
+    font-family: 'Rubik', sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    outline: 0;
+    -webkit-transition: all .3s;
+    transition: all .3s;
+}
+
+.login-form .action button:first-child {
+    width: 80%;
+    border: none;
+    padding: 15px;
+    border-radius: 40px;
+    font-family: 'Rubik', sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: #2b2d42;
+    color: #fff;
+}
+
+.login-form .action button:hover:first-child {
+    background: #1976d2;
+}
+
+.login-form .action button:nth-child(2) {
+    border: none;
+    margin-top: 10px;
+    color: #1976d2;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 4px;
+    background-color: #fff;
+}
+
+/* .login-form .action button:nth-child(2):hover {
+    background: #3c4d6d;
+} */
+
+.ul_form {
+    list-style-type: none;
+    /* Loại bỏ dấu chấm đầu */
+    padding-left: 0;
+    /* Loại bỏ khoảng cách trái của danh sách */
+}
+</style>
